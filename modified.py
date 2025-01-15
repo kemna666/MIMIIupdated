@@ -71,8 +71,7 @@ class Process():
                 train_loss.backward()
                 self.optimizer.step()
                 print(f'{self.epoch+1} loss={train_loss.item()}\n')
-            if self.epoch % 4 == 0:
-                self.accuracy()
+            self.accuracy()
     def accuracy(self):
         self.model.eval()
         with torch.no_grad():
