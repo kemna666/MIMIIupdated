@@ -27,10 +27,8 @@ class Process():
         self.load_optimizer()
         self.load_Crition()
         self.train()
-        if self.epoch % 4 == 0:
-            self.accuracy()
         self.accuracy()
-       # self.plot()
+        self.plot()
     def load_data(self):
         if self.args.dataset == 'MIMII':
             self.dataset=MIMIIDataset(self.args.pkl_file_path)
@@ -73,7 +71,8 @@ class Process():
                 train_loss.backward()
                 self.optimizer.step()
                 print(f'{self.epoch+1} loss={train_loss.item()}\n')
-
+            if self.epoch % 4 == 0:
+                self.accuracy()
     def accuracy(self):
         self.model.eval()
         with torch.no_grad():
