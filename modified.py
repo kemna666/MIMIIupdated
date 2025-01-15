@@ -27,14 +27,16 @@ class Process():
         self.load_optimizer()
         self.load_Crition()
         self.train()
+        if self.epoch % 4 == 0:
+            self.accuracy()
         self.accuracy()
-        self.draw()
+       # self.plot()
     def load_data(self):
         if self.args.dataset == 'MIMII':
-            self.dataset=MIMIIDataset(args.pkl_file_path)
+            self.dataset=MIMIIDataset(self.args.pkl_file_path)
         else:
             raise ValueError("数据集不对！")
-        self.train_data, self.test_data = train_test_split(self.dataset, test_size=test_size, random_state=random_state)
+        self.train_data, self.test_data = train_test_split(self.dataset, test_size=self.args.test_size, random_state=self.args.random_state)
         self.train_loader = DataLoader(self.train_data, batch_size=self.args.batch_size, shuffle=True, collate_fn=self.collate_fn)
         self.test_loader = DataLoader(self.test_data, batch_size=self.args.batch_size, shuffle=False, collate_fn=self.collate_fn)
     def load_model(self):
@@ -44,9 +46,9 @@ class Process():
             raise ValueError("请选择正确的模型！")
     def load_optimizer(self):
         if self.args.optimizer == 'SGD':
-            self.optimizer = SGD(self.model.parameters(),lr=self.arg.lr,momentum=0.9,nesterov=self.arg.nesterov,weight_decay=self.arg.weight_decay)
+            self.optimizer = optim.SGD(self.model.parameters(),lr=self.arg.lr,momentum=0.9)
         if self.args.optimizer == 'Adam':
-            self.optimizer = Adam(self.model.parameters(),lr=self.args.lr,weight_decay=self.arg.weight_decay)
+            self.optimizer = optim.Adam(self.model.parameters(),lr=self.args.lr)
         else:
             raise ValueError("请选择正确的优化器！")
     def load_Crition(self):
@@ -59,7 +61,7 @@ class Process():
         return Batch.from_data_list(batch)
 
     def train(self):
-        for epoch in range(self.args.epochs):
+        for self.epoch in range(self.args.epochs):
             self.model.train()
             train_loss = 0
             for data in self.train_loader:
@@ -70,7 +72,7 @@ class Process():
                 
                 train_loss.backward()
                 self.optimizer.step()
-                print(f'{epoch+1} loss={train_loss.item()}\n')
+                print(f'{self.epoch+1} loss={train_loss.item()}\n')
 
     def accuracy(self):
         self.model.eval()
@@ -86,18 +88,17 @@ class Process():
                 correct += (predicted == device_index).sum().item()
             acc = correct / total
         print(f'Accuracy: {acc:.4f}')
-        self.epoch_data.append(epoch)
+        self.epoch_data.append(self.epoch)
         self.train_accuracy.append(acc)
     def plot(self):
         xpoint = self.epoch_data
         ypoint = self.train_accuracy
         plt.plot(xpoint, ypoint)
-        plt.savefig(f'output/train{self.epochs}_accuracy_date{time.time()}.png')
+        plt.savefig(f'./output/accuracy_date{time.time()}.png')
         plt.show()
 
 
 if __name__=='__main__':
     
     config_reader = readconfig()
-    args=config_reader.args
-    process(args)
+    Process(config_reader)
